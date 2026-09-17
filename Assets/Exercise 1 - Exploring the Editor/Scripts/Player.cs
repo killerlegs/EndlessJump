@@ -1,11 +1,12 @@
+using UnityEditor.Build.Content;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] Transform startPoint;
     [SerializeField] Transform cameraTransform;
-    [SerializeField] float force = 10f;
+    [SerializeField] float moveForce = 10f;
     [SerializeField] Rigidbody rb; // set manually
+    [SerializeField] GameManager gameManager; 
 
     Vector3 moveInput;
 
@@ -23,24 +24,20 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
-        rb.AddForce(moveInput.normalized * force);
+        rb.AddForce(moveInput.normalized * moveForce);
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        Debug.Log($"collided {collision.gameObject}");
-
         if (collision.gameObject.GetComponent<KillZone>() != null)
         {
-            Debug.Log($"collided with killzone {collision.gameObject}");
-
-            Respawn();
+            gameManager.HandlePlayerDeath();
         }
     }
 
-    void Respawn()
+    public void OnRespawn(Vector3 startPoint)
     {
-        rb.transform.position = startPoint.transform.position;
+        transform.position = startPoint;
         rb.angularVelocity = Vector3.zero;
         rb.linearVelocity = Vector3.zero;
     }
