@@ -1,11 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Streams the level ahead of the player by tiling random chunk prefabs
-// edge-to-edge, spawning the next one once the player gets within
-// spawnAheadDistance of the end of the last one. Chunks are static level
-// geometry (see WorldChunk.cs) - this manager tracks every chunk it spawns
-// and destroys the ones that have fallen far enough behind the player.
+// Spawns chunk prefabs ahead of the player and destroys them once they fall
+// far enough behind. Owns the lifecycle of every chunk it places, including
+// the pre-placed starting chunks.
 public class ChunkSpawner : MonoBehaviour
 {
     [Header("References")]
@@ -18,11 +16,9 @@ public class ChunkSpawner : MonoBehaviour
     [SerializeField] float despawnDistance = 24f;
 
     [Header("Starting Chunks")]
-    [Tooltip("Pre-placed chunks at the start of the level (e.g. the starting ground). " +
-        "Tracked for despawning just like spawned chunks, once the player has run far enough past them.")]
+    [Tooltip("Pre-placed chunks at the level start; despawned like any other chunk.")]
     [SerializeField] GameObject[] startingChunks;
-    [Tooltip("Extra distance to the right of this spawner's position before the first spawned chunk is " +
-        "placed, so it can't overlap the starting chunks.")]
+    [Tooltip("Offset so the first spawned chunk doesn't overlap the starting chunks.")]
     [SerializeField] float firstChunkOffset = 12f;
 
     float nextSpawnX;
@@ -48,7 +44,8 @@ public class ChunkSpawner : MonoBehaviour
     {
         GameObject prefab = chunkPrefabs[Random.Range(0, chunkPrefabs.Length)];
         GameObject chunk = Instantiate(prefab, new Vector3(nextSpawnX, 0f, 0f), Quaternion.identity);
-        chunk.transform.SetParent(transform); // Parent all chunks to this object, to keep the hierarchy clean.
+        // Parent all chunks to this object, to keep the hierarchy clean.
+        chunk.transform.SetParent(transform); 
         spawnedChunks.Add(chunk);
 
         nextSpawnX += chunkWidth;

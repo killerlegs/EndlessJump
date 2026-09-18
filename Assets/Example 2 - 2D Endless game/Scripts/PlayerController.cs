@@ -1,11 +1,7 @@
 using UnityEngine;
 
-// Chrome-Dino-style controller: the player runs to the right on its own and
-// the camera follows it (see CameraFollow.cs), instead of the world
-// scrolling past a static player/camera. Jump is a hybrid physics move (set
-// linearVelocity.y directly, see lecture "Moving Rigidbodies: set velocity"),
-// grounding is checked with a raycast (same pattern as Example 1's
-// Player.IsGrounded()).
+// Runs right automatically, jumps (with an optional double jump), and
+// reports obstacle collisions to the GameManager.
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
@@ -20,21 +16,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] int maxJumps = 2;
     [SerializeField] float groundCheckDistance = 0.6f;
 
-    // Internal fields
-    int jumpsRemaining; // Represents how many jumps are available, resets to max jumps everytime we touch the ground
-
+    int jumpsRemaining; // resets to maxJumps when grounded
 
     void Update()
     {
         if (gameManager.IsGameOver) return;
 
-        // Keep running at a constant speed to the right regardless of collisions
         rb.linearVelocity = new Vector2(runSpeed, rb.linearVelocity.y);
 
-
-        // Check rb.linearVelocity.y because: right after a jump
-        // the ground is still within raycast range for a few 
-        // frames and would reset the player jump count
+        // Also require the player to not be moving upward - right after a jump
+        // the ground is still within raycast range for a few frames, which
+        // would otherwise refill jumpsRemaining instantly.
         if (IsGrounded() && rb.linearVelocity.y <= 0f)
         {
             jumpsRemaining = maxJumps;
@@ -42,25 +34,15 @@ public class PlayerController : MonoBehaviour
 
         if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)) && jumpsRemaining > 0)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);  // instantly add jump velocity
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             jumpsRemaining--;
         }
     }
 
     bool IsGrounded()
     {
-        // A Raycasts projects a ray from a point, in this case downwards from the player, and returns if any other collider was hit on the way.
-        RaycastHit2D groundHit = Physics2D.Raycast(groundedRaycastStartPoint.position, Vector2.down, groundCheckDistance);
-        if (groundHit)
-        {
-            bool onObstacle = groundHit.collider.gameObject.GetComponent<Obstacle>() != null;
-            if (onObstacle) return false;
-
-            Debug.Log("Grounded on: " + groundHit.collider.name, groundHit.collider);
-            return true;
-        }
-
-        return false;
+        RaycastHit2D hit = Physics2D.Raycast(groundedRaycastStartPoint.position, Vector2.down, groundCheckDistance);
+        return hit && hit.collider.GetComponent<Obstacle>() == null;
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -70,8 +52,7 @@ public class PlayerController : MonoBehaviour
             gameManager.OnPlayerCollided();
         }
     }
-
-    // Displays the grounded raycast
+    // Displays the grounded raycast for debug purposes
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;

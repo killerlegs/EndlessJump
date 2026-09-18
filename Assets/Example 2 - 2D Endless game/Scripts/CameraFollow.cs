@@ -1,18 +1,21 @@
 using UnityEngine;
 
+// Follows a target at a fixed offset, using either SmoothDamp or Lerp easing.
 public class CameraFollow : MonoBehaviour
 {
-    public Transform target;
-    Vector3 offset;
-    public enum FollowMode { SmoothDamp, Lerp }
+    enum FollowMode { SmoothDamp, Lerp }
+
+    [SerializeField] Transform target;
     [SerializeField] FollowMode followMode;
 
-    [Header("SmoothDamp Values")]
-    public float smoothTime = 0.3f;
-    private Vector3 velocity = Vector3.zero;
+    [Header("SmoothDamp")]
+    [SerializeField] float smoothTime = 0.3f;
 
-    [Header("Lerp Values")]
-    public float lerpSpeed;
+    [Header("Lerp")]
+    [SerializeField] float lerpSpeed;
+
+    Vector3 offset;
+    Vector3 velocity;
 
     void Start()
     {
@@ -33,6 +36,5 @@ public class CameraFollow : MonoBehaviour
             transform.position = Vector3.Lerp(
                 transform.position, target.position + offset, lerpSpeed * Time.deltaTime
             );
-        }
     }
 }
