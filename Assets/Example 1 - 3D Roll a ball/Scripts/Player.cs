@@ -1,7 +1,8 @@
-using UnityEditor.Build.Content;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
+// Physics-based ball controller: WASD/arrow input is turned into a push
+// (Rigidbody.AddForce) relative to the camera's facing direction, so
+// "forward" always means "away from the camera" no matter how it's rotated.
 public class Player : MonoBehaviour
 {
     [SerializeField] Transform cameraTransform;
@@ -15,27 +16,21 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        Vector2 moveAxis = Vector2.zero;
+        // GetAxisRaw returns -1, 0, or 1 with no smoothing, so input reacts instantly.
+        Vector3 inputInCameraSpace = new Vector3(
+            Input.GetAxisRaw("Horizontal"),
+            0,
+            Input.GetAxisRaw("Vertical"));
 
-        // A bit of a dirty workaround to get the movement keys, so students don't need to change input settings.
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) moveAxis.x -= 1;
-            if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) moveAxis.x += 1;
-            if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) moveAxis.y -= 1;
-            if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) moveAxis.y += 1;
-        }
-
-        Vector3 inputInCameraSpace = new Vector3(moveAxis.x, 0, moveAxis.y);
-
-        // convert from camera space to world space
+        // TransformVector rotates that local direction into world space using
+        // the camera's current rotation, without applying its position or scale.
         moveInput = cameraTransform.TransformVector(inputInCameraSpace);
 
         // Remove the y component, we only want to move the ball horizontally
         moveInput.y = 0;
         moveInput.Normalize();
 
-        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame && IsGrounded())
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
         {
             // Jump
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -44,10 +39,12 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Move horizontally
+        // Physics forces belong in FixedUpdate, since it runs on physics's own
+        // fixed timestep instead of once per rendered frame like Update.
         rb.AddForce(moveInput.normalized * moveForce);
     }
 
+    // A short downward raycast: if it hits anything, the ball is touching ground.
     bool IsGrounded()
     {
         return Physics.Raycast(transform.position, Vector3.down, groundCheckDistance);
@@ -61,9 +58,13 @@ public class Player : MonoBehaviour
         }
     }
 
+    // Called by GameManager to move the ball back to the start point - used
+    // both for the initial spawn and every respawn after death.
     public void OnRespawn(Vector3 startPoint)
     {
         transform.position = startPoint;
+        // Without resetting these, the ball would keep its old momentum and
+        // spin after being teleported back to the start.
         rb.angularVelocity = Vector3.zero;
         rb.linearVelocity = Vector3.zero;
     }
