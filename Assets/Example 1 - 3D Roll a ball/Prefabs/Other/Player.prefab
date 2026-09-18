@@ -150,7 +150,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb5c47440a19d5d448d254399f5bf3cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCameraFollow
-  followTarget: {fileID: 4547009010925514628}
+  target: {fileID: 4547009010925514628}
+  followMode: 0
+  smoothTime: 0.3
+  lerpSpeed: 5
 --- !u!1 &2424652904371477930
 GameObject:
   m_ObjectHideFlags: 0
@@ -369,7 +372,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c15a8ef44bb05704fab4c39ff3cf110b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  startPoint: {fileID: 0}
   cameraTransform: {fileID: 8688986630147692928}
-  force: 8
+  moveForce: 10
   rb: {fileID: 4283884508170925250}
+  gameManager: {fileID: 0}
+  jumpForce: 5
+  groundCheckDistance: 0.6

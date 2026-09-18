@@ -682,9 +682,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 2DEndlessGame::CameraFollow
   target: {fileID: 847670968}
-  followMode: 0
+  followMode: 1
   smoothTime: 0.15
-  lerpSpeed: 0
+  lerpSpeed: 5
 --- !u!1 &2063337869 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4673967621393542807, guid: 659e4a64848388749b29c52e2423d676, type: 3}
