@@ -133,7 +133,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7104845602890985145, guid: 659e4a64848388749b29c52e2423d676, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7104845602890985145, guid: 659e4a64848388749b29c52e2423d676, type: 3}
       propertyPath: m_LocalPosition.y
@@ -244,10 +244,10 @@ MonoBehaviour:
   gameManager: {fileID: 1567312540}
   rb: {fileID: 847670966}
   groundedRaycastStartPoint: {fileID: 1701976033}
-  runSpeed: 5
   jumpForce: 6
   maxJumps: 2
-  groundCheckDistance: 0.4
+  groundCheckDistance: 0.6
+  wallClingGravityScale: 0.1
 --- !u!58 &847670965
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -361,7 +361,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 987526a0691f70b42b47cf867c1b5e9f, type: 3}
-  m_Color: {r: 1, g: 0.19999999, b: 0.32301795, a: 1}
+  m_Color: {r: 0.1137255, g: 0.8078432, b: 0.8470589, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -411,11 +411,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7104845602890985145, guid: 659e4a64848388749b29c52e2423d676, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7104845602890985145, guid: 659e4a64848388749b29c52e2423d676, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.00000008940697
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 7104845602890985145, guid: 659e4a64848388749b29c52e2423d676, type: 3}
       propertyPath: m_LocalPosition.z
@@ -525,7 +525,7 @@ Transform:
   m_GameObject: {fileID: 1701976032}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.75, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -569,7 +569,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.55, g: 0.85, b: 0.98, a: 1}
+  m_BackGroundColor: {r: 1, g: 0.97647065, b: 0.8470589, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -733,13 +733,14 @@ MonoBehaviour:
   - {fileID: 1036128159389454909, guid: d53bed18f82c092479cefee0aa20e9ea, type: 3}
   - {fileID: 1036128159389454909, guid: ad72060c21e3dca4db4b1b01b0641900, type: 3}
   - {fileID: 1036128159389454909, guid: ae8a702a69c5c0b47bb4a64e23964042, type: 3}
-  chunkWidth: 12
+  chunkHeight: 12
   spawnAheadDistance: 14
   despawnDistance: 24
   startingChunks:
   - {fileID: 2063337869}
   - {fileID: 993431643}
   firstChunkOffset: 12
+  killZoneWidth: 50
 --- !u!4 &2086854036
 Transform:
   m_ObjectHideFlags: 0

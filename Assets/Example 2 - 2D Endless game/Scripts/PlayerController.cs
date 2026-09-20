@@ -1,7 +1,8 @@
 using UnityEngine;
 
-// Runs right automatically, jumps (with an optional double jump), and
-// reports obstacle collisions to the GameManager.
+// Falls under normal gravity and climbs by wall-jumping left/right (with
+// reduced gravity while clinging to a wall), reporting obstacle collisions
+// to the GameManager.
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
@@ -11,37 +12,63 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Transform groundedRaycastStartPoint;
 
     [Header("Player Stats")]
-    [SerializeField] float runSpeed = 5f;
     [SerializeField] float jumpForce = 8f;
     [SerializeField] int maxJumps = 2;
     [SerializeField] float groundCheckDistance = 0.6f;
+    [SerializeField] float wallClingGravityScale = 0.1f;
 
-    int jumpsRemaining; // resets to maxJumps when grounded
+    float normalGravityScale;
+    int jumpsRemaining; // resets to maxJumps when clinging to a wall
+
+    void Start()
+    {
+        normalGravityScale = rb.gravityScale;
+        jumpsRemaining = maxJumps;
+    }
 
     void Update()
     {
         if (gameManager.IsGameOver) return;
 
-        rb.linearVelocity = new Vector2(runSpeed, rb.linearVelocity.y);
+        // Also require the player to not be moving away from the wall -
+        // right after a jump the wall is still within raycast range for a
+        // few frames, which would otherwise refill jumpsRemaining instantly.
+        bool clingingLeft = IsGroundedLeft() && rb.linearVelocity.x <= 0f;
+        bool clingingRight = IsGroundedRight() && rb.linearVelocity.x >= 0f;
 
-        // Also require the player to not be moving upward - right after a jump
-        // the ground is still within raycast range for a few frames, which
-        // would otherwise refill jumpsRemaining instantly.
-        if (IsGrounded() && rb.linearVelocity.y <= 0f)
+        if (clingingLeft || clingingRight)
         {
             jumpsRemaining = maxJumps;
+            rb.gravityScale = wallClingGravityScale;
+        }
+        else
+        {
+            rb.gravityScale = normalGravityScale;
         }
 
-        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)) && jumpsRemaining > 0)
+        if (Input.GetMouseButtonDown(0) && jumpsRemaining > 0)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            // Left jump: kick up and to the left, off a wall on the right.
+            rb.linearVelocity = new Vector2(-jumpForce, jumpForce);
+            jumpsRemaining--;
+        }
+        else if (Input.GetMouseButtonDown(1) && jumpsRemaining > 0)
+        {
+            // Right jump: kick up and to the right, off a wall on the left.
+            rb.linearVelocity = new Vector2(jumpForce, jumpForce);
             jumpsRemaining--;
         }
     }
 
-    bool IsGrounded()
+    bool IsGroundedLeft()
     {
-        RaycastHit2D hit = Physics2D.Raycast(groundedRaycastStartPoint.position, Vector2.down, groundCheckDistance);
+        RaycastHit2D hit = Physics2D.Raycast(groundedRaycastStartPoint.position, Vector2.left, groundCheckDistance);
+        return hit && hit.collider.GetComponent<Obstacle>() == null;
+    }
+
+    bool IsGroundedRight()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(groundedRaycastStartPoint.position, Vector2.right, groundCheckDistance);
         return hit && hit.collider.GetComponent<Obstacle>() == null;
     }
 
@@ -49,13 +76,21 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.collider.GetComponent<Obstacle>() != null)
         {
-            gameManager.OnPlayerCollided();
+            Die();
         }
     }
-    // Displays the grounded raycast for debug purposes
+
+    // Called by KillZone (a trigger collider) when the player falls into it.
+    public void Die()
+    {
+        gameManager.OnPlayerCollided();
+    }
+
+    // Displays the grounded raycasts for debug purposes
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawRay(groundedRaycastStartPoint.position, Vector2.down * groundCheckDistance);
+        Gizmos.DrawRay(groundedRaycastStartPoint.position, Vector2.left * groundCheckDistance);
+        Gizmos.DrawRay(groundedRaycastStartPoint.position, Vector2.right * groundCheckDistance);
     }
 }

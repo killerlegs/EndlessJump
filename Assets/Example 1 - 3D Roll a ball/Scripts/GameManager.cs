@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Central point for level flow. Manages Player Restart 
+// Central point for level flow. Manages Player Restart
 // and has methods that are called by the Finish Level zone
 public class GameManager : MonoBehaviour
 {
     [SerializeField] Transform startPoint;
-    [SerializeField] Player player;
+    [SerializeField] PlayerController player;
     [SerializeField] float levelCompleteDelay = 1.5f;
 
     private void Start()

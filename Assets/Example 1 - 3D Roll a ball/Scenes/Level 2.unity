@@ -3038,6 +3038,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7745102401827633415, guid: 6f988d3fc25a4884aaed774c74aa89ac, type: 3}
   m_PrefabInstance: {fileID: 981413894}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1033136008 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7594019522305175804, guid: ea2bf0f1546c9844f97997ba8dd64f55, type: 3}
+  m_PrefabInstance: {fileID: 1140309034194646557}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c7eb0bbbf309e1459afae6d1467d2a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RollABall::PlayerController
 --- !u!1 &1033458227
 GameObject:
   m_ObjectHideFlags: 0
@@ -3466,7 +3477,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   startPoint: {fileID: 10696709}
-  player: {fileID: 1140309034194646558}
+  player: {fileID: 1033136008}
   levelCompleteDelay: 1.5
 --- !u!4 &1828009955
 Transform:
@@ -3775,22 +3786,19 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7594019522305175804, guid: ea2bf0f1546c9844f97997ba8dd64f55, type: 3}
+      propertyPath: gameManager
+      value: 
+      objectReference: {fileID: 1828009954}
+    - target: {fileID: 7626034033556786096, guid: ea2bf0f1546c9844f97997ba8dd64f55, type: 3}
+      propertyPath: gameManager
+      value: 
+      objectReference: {fileID: 1828009954}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ea2bf0f1546c9844f97997ba8dd64f55, type: 3}
---- !u!114 &1140309034194646558 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1036829270915636221, guid: ea2bf0f1546c9844f97997ba8dd64f55, type: 3}
-  m_PrefabInstance: {fileID: 1140309034194646557}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c15a8ef44bb05704fab4c39ff3cf110b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Player
 --- !u!1001 &5672548354721034684
 PrefabInstance:
   m_ObjectHideFlags: 0

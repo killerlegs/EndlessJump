@@ -10,7 +10,7 @@ public class FinishZone : MonoBehaviour
     {
         // GetComponentInParent handles the Player script being on a parent
         // object of whatever collider actually touched the trigger.
-        Player player = other.gameObject.GetComponentInParent<Player>();
+        PlayerController player = other.gameObject.GetComponentInParent<PlayerController>();
         if (player == null) return;
 
         finishVfx.Play();

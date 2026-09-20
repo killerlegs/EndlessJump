@@ -3,12 +3,16 @@ using UnityEngine;
 // Physics-based ball controller: WASD/arrow input is turned into a push
 // (Rigidbody.AddForce) relative to the camera's facing direction, so
 // "forward" always means "away from the camera" no matter how it's rotated.
-public class Player : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] Transform cameraTransform;
-    [SerializeField] float moveForce = 10f;
-    [SerializeField] Rigidbody rb; // set manually
+    [SerializeField] Rigidbody rb;
+    [SerializeField] Transform raycastStartPoint;
     [SerializeField] GameManager gameManager;
+
+    [Header("Settings")]
+    [SerializeField] float moveForce = 10f;
     [SerializeField] float jumpForce = 5f;
     [SerializeField] float groundCheckDistance = 0.6f;
 
@@ -47,7 +51,7 @@ public class Player : MonoBehaviour
     // A short downward raycast: if it hits anything, the ball is touching ground.
     bool IsGrounded()
     {
-        return Physics.Raycast(transform.position, Vector3.down, groundCheckDistance);
+        return Physics.Raycast(raycastStartPoint.position, Vector3.down, groundCheckDistance);
     }
 
     void OnCollisionEnter(Collision collision)
@@ -62,7 +66,7 @@ public class Player : MonoBehaviour
     // both for the initial spawn and every respawn after death.
     public void OnRespawn(Vector3 startPoint)
     {
-        transform.position = startPoint;
+        rb.position = startPoint;
         // Without resetting these, the ball would keep its old momentum and
         // spin after being teleported back to the start.
         rb.angularVelocity = Vector3.zero;
