@@ -20,35 +20,37 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // GetAxisRaw returns -1, 0, or 1 with no smoothing, so input reacts instantly.
+        // GetAxisRaw returns -1, 0, or 1 with no smoothing - contrary to Input.GetAxis
         Vector3 inputInCameraSpace = new Vector3(
             Input.GetAxisRaw("Horizontal"),
             0,
             Input.GetAxisRaw("Vertical"));
 
-        // TransformVector rotates that local direction into world space using
-        // the camera's current rotation, without applying its position or scale.
+        // TransformVector transforms the local direction into world space using
+        // the camera's current rotation.
         moveInput = cameraTransform.TransformVector(inputInCameraSpace);
 
-        // Remove the y component, we only want to move the ball horizontally
+        // Remove the y component, we only want to move the ball horizontally, nomralize afterwards.
         moveInput.y = 0;
         moveInput.Normalize();
 
+        // Jump
         if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
         {
-            // Jump
+            // Jump add force is allowed to be inside the normal Update instead of the FixedUpdate,
+            // because it only happens once and is not a continous addition of force
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
     }
 
     void FixedUpdate()
     {
-        // Physics forces belong in FixedUpdate, since it runs on physics's own
+        // Continous physics forces belong in FixedUpdate, since it runs on physics's own
         // fixed timestep instead of once per rendered frame like Update.
         rb.AddForce(moveInput.normalized * moveForce);
     }
 
-    // A short downward raycast: if it hits anything, the ball is touching ground.
+    // The grounded check here is a short downward raycast: if it hits anything, the ball is touching ground.
     bool IsGrounded()
     {
         return Physics.Raycast(raycastStartPoint.position, Vector3.down, groundCheckDistance);
@@ -58,7 +60,7 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.GetComponent<KillZone>() != null)
         {
-            gameManager.HandlePlayerDeath();
+            gameManager.OnPlayerEnteredKillzone();
         }
     }
 
@@ -69,7 +71,7 @@ public class PlayerController : MonoBehaviour
         rb.position = startPoint;
         // Without resetting these, the ball would keep its old momentum and
         // spin after being teleported back to the start.
-        rb.angularVelocity = Vector3.zero;
         rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
     }
 }

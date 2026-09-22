@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
     {
         if (gameState != GameState.Playing) return;
 
+        // Score is not saved anywhere yet, hisghscores don't exist yet -> TODO
         score += scorePerSecond * Time.deltaTime;
     }
 
@@ -34,18 +35,12 @@ public class GameManager : MonoBehaviour
         if (gameState == GameState.GameOver) return;
 
         gameState = GameState.GameOver;
-        Debug.Log($"Game Over. Score: {score:F0}");
+        Debug.Log($"Game Over. Score: {score:F0}"); // F0 formats the output string by ignoring the remainders after the comma (4.35 -> 4)
 
-        StartCoroutine(RestartAfterDelay());
+        Invoke(nameof(Restart), restartDelay);
     }
 
-    IEnumerator RestartAfterDelay()
-    {
-        yield return new WaitForSeconds(restartDelay);
-        Restart();
-    }
-
-    public void Restart()
+    void Restart()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }

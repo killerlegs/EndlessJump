@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Sits on a trigger collider at the end of the level. Ends the level if player entersit
+// Sits on a trigger collider at the end of the level. Ends the level if player enters it.
 public class FinishZone : MonoBehaviour
 {
     [SerializeField] ParticleSystem finishVfx; // set manually

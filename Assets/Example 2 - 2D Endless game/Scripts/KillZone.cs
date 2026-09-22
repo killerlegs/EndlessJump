@@ -1,9 +1,7 @@
 using UnityEngine;
 
-// A trigger collider that ends the game when the player falls into it (see
-// WorldGenerator, which creates and repositions this to trail below the
-// lowest loaded chunk). The check lives here rather than on PlayerController
-// since this is the side with the trigger collider.
+// A trigger collider that ends the game when the player falls into it.
+// The world generator places it at some distance below the player
 public class KillZone : MonoBehaviour
 {
     void OnTriggerEnter2D(Collider2D other)

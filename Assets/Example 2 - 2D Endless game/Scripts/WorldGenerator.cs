@@ -63,6 +63,7 @@ public class WorldGenerator : MonoBehaviour
         DespawnChunksBelowPlayer();
     }
 
+    // Instantiate a random chunk above the player.
     void Spawn()
     {
         GameObject prefab = chunkPrefabs[Random.Range(0, chunkPrefabs.Length)];
@@ -74,6 +75,7 @@ public class WorldGenerator : MonoBehaviour
         nextSpawnY += chunkHeight;
     }
 
+    // Despawn chunks if their distance to the player is > despawn distance.
     void DespawnChunksBelowPlayer()
     {
         for (int i = spawnedChunks.Count - 1; i >= 0; i--)

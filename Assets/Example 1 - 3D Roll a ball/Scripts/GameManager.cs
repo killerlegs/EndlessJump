@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // Central point for level flow. Manages Player Restart
-// and has methods that are called by the Finish Level zone
+// and has methods that are called by the Finish Level zone.
 public class GameManager : MonoBehaviour
 {
     [SerializeField] Transform startPoint;
@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Called by Player when it touches a KillZone.
-    public void HandlePlayerDeath()
+    public void OnPlayerEnteredKillzone()
     {
         player.OnRespawn(startPoint.position);
     }
@@ -31,7 +31,7 @@ public class GameManager : MonoBehaviour
     void LoadNextLevel()
     {
         // Scenes only have a valid build index if they're added to
-        // File > Build Profiles > Scene List.
+        // File > Build Profiles > Scene List, otherwise this index code ownt work.
         int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
         if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
         {

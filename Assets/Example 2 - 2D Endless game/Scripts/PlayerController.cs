@@ -37,23 +37,20 @@ public class PlayerController : MonoBehaviour
     {
         if (gameManager.IsGameOver) return;
 
-        // Also require the player to not be moving away from the wall -
-        // right after a jump the wall is still within raycast range for a
-        // few frames, which would otherwise refill jumpsRemaining instantly.
+        // We check against wallStickVelocityTolerance, as right after a jump the wall is still be within raycast range for a
+        // few frames, however we dont want the player to be grounded right after jumping.
         bool clingingLeft = IsGrounded(Vector2.left) && rb.linearVelocity.x <= wallStickVelocityTolerance;
         bool clingingRight = IsGrounded(Vector2.right) && rb.linearVelocity.x >= -wallStickVelocityTolerance;
 
-        // Reset the jump counter and limit gravity when clinging to a wall
+        // Reset the jump counter and limit gravity when clinging to a wall.
         if (clingingLeft || clingingRight)
         {
             rb.gravityScale = wallClingGravityScale;
 
-
+            // Only reset the velocity and max jump when we started clinign to a wall.
             if (!wasGroundedLastFrame)
             {
                 jumpsRemaining = maxJumps;
-                // Reset the Y velocity to beginning to stick to a wall
-
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0);
                 wasGroundedLastFrame = true;
             }
@@ -62,16 +59,15 @@ public class PlayerController : MonoBehaviour
         {
             rb.gravityScale = defaultGravityScale;
             wasGroundedLastFrame = false;
-
         }
 
-        if (Input.GetMouseButtonDown(0) && jumpsRemaining > 0)
+        if ( !clingingLeft && Input.GetMouseButtonDown(0) && jumpsRemaining > 0)
         {
             // Left jump: kick up and to the left, off a wall on the right.
             rb.linearVelocity = new Vector2(-jumpForceSide, jumpForceUp);
             jumpsRemaining--;
         }
-        else if (Input.GetMouseButtonDown(1) && jumpsRemaining > 0)
+        else if (!clingingRight && Input.GetMouseButtonDown(1) && jumpsRemaining > 0)
         {
             // Right jump: kick up and to the right, off a wall on the left.
             rb.linearVelocity = new Vector2(jumpForceSide, jumpForceUp);
@@ -81,14 +77,9 @@ public class PlayerController : MonoBehaviour
 
     bool IsGrounded(Vector3 direction)
     {
-        Debug.DrawRay(groundedRaycastStartPoint.position, direction, Color.yellow);
         RaycastHit2D hit = Physics2D.Raycast(groundedRaycastStartPoint.position, direction, groundCheckDistance, groundedCheckLayerMask);
-        Debug.Log($"is grounded {direction} : {hit && hit.collider.GetComponent<Obstacle>() == null}");
-        if (hit.collider != null) Debug.Log($" & col: {hit.collider.gameObject.name}");
         return hit && hit.collider.GetComponent<Obstacle>() == null;
     }
-
-
 
     void OnCollisionEnter2D(Collision2D collision)
     {
