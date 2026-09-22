@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 // Falls under normal gravity and climbs by wall-jumping left/right (with
@@ -12,18 +13,22 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Transform groundedRaycastStartPoint;
 
     [Header("Player Stats")]
-    [SerializeField] float jumpForce = 8f;
+    [SerializeField] float jumpForceSide = 8f;
+    [SerializeField] float jumpForceUp = 12f;
     [SerializeField] int maxJumps = 2;
-    [SerializeField] float groundCheckDistance = 0.6f;
+    [SerializeField] float defaultGravityScale = 2f;
     [SerializeField] float wallClingGravityScale = 0.1f;
+    [SerializeField] float groundCheckDistance = 0.6f;
+    [Tooltip("Set it to ignore the player layer")]
+    [SerializeField] LayerMask groundedCheckLayerMask;
 
-    float normalGravityScale;
     int jumpsRemaining; // resets to maxJumps when clinging to a wall
+    bool wasGroundedLastFrame;
 
     void Start()
     {
-        normalGravityScale = rb.gravityScale;
         jumpsRemaining = maxJumps;
+        rb.freezeRotation = true;
     }
 
     void Update()
@@ -33,44 +38,52 @@ public class PlayerController : MonoBehaviour
         // Also require the player to not be moving away from the wall -
         // right after a jump the wall is still within raycast range for a
         // few frames, which would otherwise refill jumpsRemaining instantly.
-        bool clingingLeft = IsGroundedLeft() && rb.linearVelocity.x <= 0f;
-        bool clingingRight = IsGroundedRight() && rb.linearVelocity.x >= 0f;
+        bool clingingLeft = IsGrounded(Vector2.left) && rb.linearVelocity.x <= 0f;
+        bool clingingRight = IsGrounded(Vector2.right) && rb.linearVelocity.x >= 0f;
 
+        // Reset the jump counter and limit gravity when clinging to a wall
         if (clingingLeft || clingingRight)
         {
-            jumpsRemaining = maxJumps;
-            rb.gravityScale = wallClingGravityScale;
+            if (!wasGroundedLastFrame)
+            {
+                jumpsRemaining = maxJumps;
+                // Reset the Y velocity to beginning to stick to a wall
+
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0);
+                wasGroundedLastFrame = true;
+            }
         }
         else
         {
-            rb.gravityScale = normalGravityScale;
+            rb.gravityScale = defaultGravityScale;
+            wasGroundedLastFrame = false;
+
         }
 
         if (Input.GetMouseButtonDown(0) && jumpsRemaining > 0)
         {
             // Left jump: kick up and to the left, off a wall on the right.
-            rb.linearVelocity = new Vector2(-jumpForce, jumpForce);
+            rb.linearVelocity = new Vector2(-jumpForceSide, jumpForceUp);
             jumpsRemaining--;
         }
         else if (Input.GetMouseButtonDown(1) && jumpsRemaining > 0)
         {
             // Right jump: kick up and to the right, off a wall on the left.
-            rb.linearVelocity = new Vector2(jumpForce, jumpForce);
+            rb.linearVelocity = new Vector2(jumpForceSide, jumpForceUp);
             jumpsRemaining--;
         }
     }
 
-    bool IsGroundedLeft()
+    bool IsGrounded(Vector3 direction)
     {
-        RaycastHit2D hit = Physics2D.Raycast(groundedRaycastStartPoint.position, Vector2.left, groundCheckDistance);
+        Debug.DrawRay(groundedRaycastStartPoint.position, direction, Color.yellow);
+        RaycastHit2D hit = Physics2D.Raycast(groundedRaycastStartPoint.position, direction, groundCheckDistance, groundedCheckLayerMask);
+        Debug.Log($"is grounded {direction} : {hit && hit.collider.GetComponent<Obstacle>() == null}");
+        if (hit.collider != null) Debug.Log($" & col: {hit.collider.gameObject.name}");
         return hit && hit.collider.GetComponent<Obstacle>() == null;
     }
 
-    bool IsGroundedRight()
-    {
-        RaycastHit2D hit = Physics2D.Raycast(groundedRaycastStartPoint.position, Vector2.right, groundCheckDistance);
-        return hit && hit.collider.GetComponent<Obstacle>() == null;
-    }
+
 
     void OnCollisionEnter2D(Collision2D collision)
     {
@@ -83,7 +96,11 @@ public class PlayerController : MonoBehaviour
     // Called by KillZone (a trigger collider) when the player falls into it.
     public void Die()
     {
-        gameManager.OnPlayerCollided();
+        rb.gravityScale = defaultGravityScale;
+        // add a small rotation force to show loss of control
+        rb.freezeRotation = false;
+        rb.AddTorque(25f);
+        gameManager.OnPlayerCollidedWithObstacle();
     }
 
     // Displays the grounded raycasts for debug purposes

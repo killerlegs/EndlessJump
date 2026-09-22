@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
         score += scorePerSecond * Time.deltaTime;
     }
 
-    public void OnPlayerCollided()
+    public void OnPlayerCollidedWithObstacle()
     {
         if (gameState == GameState.GameOver) return;
 
