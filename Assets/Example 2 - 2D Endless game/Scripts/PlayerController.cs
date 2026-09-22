@@ -21,6 +21,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float groundCheckDistance = 0.6f;
     [Tooltip("Set it to ignore the player layer")]
     [SerializeField] LayerMask groundedCheckLayerMask;
+    [Tooltip("Tolerance for the 'moving away from wall' velocity check, to absorb tiny residual velocities the physics solver leaves after resolving a wall collision.")]
+    [SerializeField] float wallStickVelocityTolerance = 0.5f;
 
     int jumpsRemaining; // resets to maxJumps when clinging to a wall
     bool wasGroundedLastFrame;
@@ -38,12 +40,15 @@ public class PlayerController : MonoBehaviour
         // Also require the player to not be moving away from the wall -
         // right after a jump the wall is still within raycast range for a
         // few frames, which would otherwise refill jumpsRemaining instantly.
-        bool clingingLeft = IsGrounded(Vector2.left) && rb.linearVelocity.x <= 0f;
-        bool clingingRight = IsGrounded(Vector2.right) && rb.linearVelocity.x >= 0f;
+        bool clingingLeft = IsGrounded(Vector2.left) && rb.linearVelocity.x <= wallStickVelocityTolerance;
+        bool clingingRight = IsGrounded(Vector2.right) && rb.linearVelocity.x >= -wallStickVelocityTolerance;
 
         // Reset the jump counter and limit gravity when clinging to a wall
         if (clingingLeft || clingingRight)
         {
+            rb.gravityScale = wallClingGravityScale;
+
+
             if (!wasGroundedLastFrame)
             {
                 jumpsRemaining = maxJumps;
