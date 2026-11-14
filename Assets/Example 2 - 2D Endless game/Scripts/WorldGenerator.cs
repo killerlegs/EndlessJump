@@ -8,7 +8,9 @@ public class WorldGenerator : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] Transform player;
+    [SerializeField] Transform mainCamera;
     [SerializeField] GameObject[] chunkPrefabs;
+    Camera cameraComponent;
 
     [Header("Spawning")]
     [SerializeField] float chunkHeight = 12f; 
@@ -24,6 +26,8 @@ public class WorldGenerator : MonoBehaviour
     [Header("Kill Zone")]
     [Tooltip("Width of the kill zone that trails below the lowest loaded chunk.")]
     [SerializeField] float killZoneWidth = 50f;
+    [SerializeField] Material killZoneMaterial;
+    [SerializeField] float killZoneLineWidth = 0.3f;
 
     float nextSpawnY;
     Transform killZone;
@@ -33,7 +37,10 @@ public class WorldGenerator : MonoBehaviour
     {
         nextSpawnY = transform.position.y + firstChunkOffset;
         spawnedChunks.AddRange(startingChunks);
+
         killZone = CreateKillZone();
+
+        cameraComponent = mainCamera.GetComponent<Camera>();
     }
 
     // A trigger that starts below the starting chunks and, as chunks despawn,
@@ -47,20 +54,58 @@ public class WorldGenerator : MonoBehaviour
 
         BoxCollider2D collider = killZoneObject.AddComponent<BoxCollider2D>();
         collider.isTrigger = true;
-        collider.size = new Vector2(killZoneWidth, 1f);
+        collider.size = new Vector2(killZoneWidth, killZoneLineWidth);
 
         killZoneObject.AddComponent<KillZone>();
+        LineRenderer line = killZoneObject.AddComponent<LineRenderer>();
+
+        line.material = killZoneMaterial;
+        line.positionCount = 2;
+        line.useWorldSpace = false;
+
+        line.SetPosition(0, new Vector3(-killZoneWidth / 2f, 0f, 0f));
+        line.SetPosition(1, new Vector3(killZoneWidth / 2f, 0f, 0f));
+
+        line.startWidth = killZoneLineWidth;
+        line.endWidth = killZoneLineWidth;
+
+        line.startColor = Color.red;
+        line.endColor = Color.red;
+
+        line.sortingOrder = 20;
         return killZoneObject.transform;
     }
-
-    void Update()
+    void UpdateKillZone()
     {
-        if (nextSpawnY - player.position.y < spawnAheadDistance)
+        float bottomY =
+            mainCamera.position.y - cameraComponent.orthographicSize;
+
+        float newY = Mathf.Max(
+            killZone.position.y,
+            bottomY + 0.5f
+        );
+
+        killZone.position = new Vector3(
+            killZone.position.x,
+            newY,
+            killZone.position.z
+        );
+    }
+   void Update()
+    {
+        float highestPosition = Mathf.Max(
+            player.position.y,
+            mainCamera.position.y
+        );
+
+        if (nextSpawnY - highestPosition < spawnAheadDistance)
         {
             Spawn();
         }
 
         DespawnChunksBelowPlayer();
+
+        UpdateKillZone();
     }
 
     // Instantiate a random chunk above the player.
@@ -78,19 +123,18 @@ public class WorldGenerator : MonoBehaviour
     // Despawn chunks if their distance to the player is > despawn distance.
     void DespawnChunksBelowPlayer()
     {
+        float highestPosition = Mathf.Max(
+            player.position.y,
+            mainCamera.position.y
+        );
+
         for (int i = spawnedChunks.Count - 1; i >= 0; i--)
         {
             GameObject chunk = spawnedChunks[i];
 
-            if (player.position.y - chunk.transform.position.y > despawnDistance)
+            if (highestPosition - chunk.transform.position.y > despawnDistance)
             {
                 spawnedChunks.RemoveAt(i);
-
-                if (chunk.transform.position.y > killZone.position.y)
-                {
-                    killZone.position = new Vector3(killZone.position.x, chunk.transform.position.y, killZone.position.z);
-                }
-
                 Destroy(chunk);
             }
         }

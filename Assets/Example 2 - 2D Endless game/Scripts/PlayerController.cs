@@ -8,7 +8,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] GameManager gameManager;
+    //[SerializeField] GameManager gameManager;
     [SerializeField] Rigidbody2D rb;
     [SerializeField] Transform groundedRaycastStartPoint;
 
@@ -24,6 +24,12 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Tolerance for the 'moving away from wall' velocity check, to absorb tiny residual velocities the physics solver leaves after resolving a wall collision.")]
     [SerializeField] float wallStickVelocityTolerance = 0.5f;
 
+    [Header("Audio")]
+    [SerializeField] AudioSource jumpAudioSource;
+    [SerializeField] AudioClip jumpSound;
+    [Header("VFX")]
+    [SerializeField] ParticleSystem jumpParticles;
+
     int jumpsRemaining; // resets to maxJumps when clinging to a wall
     bool wasGroundedLastFrame;
 
@@ -35,7 +41,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (gameManager.IsGameOver) return;
+        if (GameManager.Instance.IsGameOver) return;
 
         // We check against wallStickVelocityTolerance, as right after a jump the wall is still be within raycast range for a
         // few frames, however we dont want the player to be grounded right after jumping.
@@ -66,12 +72,16 @@ public class PlayerController : MonoBehaviour
             // Left jump: kick up and to the left, off a wall on the right.
             rb.linearVelocity = new Vector2(-jumpForceSide, jumpForceUp);
             jumpsRemaining--;
+            jumpAudioSource.PlayOneShot(jumpSound);
+            jumpParticles.Play();
         }
         else if (!clingingRight && Input.GetMouseButtonDown(1) && jumpsRemaining > 0)
         {
             // Right jump: kick up and to the right, off a wall on the left.
             rb.linearVelocity = new Vector2(jumpForceSide, jumpForceUp);
             jumpsRemaining--;
+            jumpAudioSource.PlayOneShot(jumpSound);
+            jumpParticles.Play();   
         }
     }
 
@@ -96,7 +106,7 @@ public class PlayerController : MonoBehaviour
         // add a small rotation force to show loss of control
         rb.freezeRotation = false;
         rb.AddTorque(25f);
-        gameManager.OnPlayerCollidedWithObstacle();
+        GameManager.Instance.OnPlayerCollidedWithObstacle();
     }
 
     // Displays the grounded raycasts for debug purposes
